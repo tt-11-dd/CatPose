@@ -1,6 +1,6 @@
 import { Camera, ChevronRight, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { startFromFile, useApp } from "../lib/state";
+import { startFromFile, stickersOf, useApp } from "../lib/state";
 import { CatLogo } from "../ui/CatLogo";
 import { PawPrint } from "../ui/PawPrint";
 import { StickerWall } from "../ui/StickerWall";
@@ -22,7 +22,7 @@ export function HomePage() {
     >
       <header className="flex items-center justify-between px-5 pt-[max(18px,env(safe-area-inset-top))]">
         <div className="flex items-center gap-2.5">
-          <CatLogo size={46} />
+          <CatLogo size={48} />
           <div>
             <h1 className="font-display text-[28px] leading-none font-semibold text-ink">
               CatPose
@@ -54,12 +54,12 @@ export function HomePage() {
           <span className="block font-display text-[18px] font-semibold text-ink">
             拍一只猫咪
           </span>
-          <span className="mt-0.5 block text-[13px] text-muted">收集它的可爱姿势吧！</span>
+          <span className="mt-0.5 block text-[13px] text-muted">一点还是十一，拍的时候选</span>
         </span>
         <ChevronRight className="size-5 text-muted" />
       </button>
 
-      <div className="relative mt-2 min-h-0 flex-1">
+      <div className="relative mt-2 min-h-0 flex-1 overflow-auto">
         <StickerWall stickers={stickers} onOpen={(id) => navigate(`/sticker/${id}`)} />
       </div>
 
@@ -67,7 +67,7 @@ export function HomePage() {
         <div className="flex items-center gap-2 rounded-full bg-banner px-4 py-2 text-sm font-bold text-ink shadow-sm">
           <PawPrint size={18} className="text-honey-dark" />
           <span>
-            已收集 <span className="text-honey-dark">{stickers.length}</span> 个姿势
+            一点 {stickersOf("yidian", stickers).length} · 十一 {stickersOf("shiyi", stickers).length}
           </span>
         </div>
       </div>

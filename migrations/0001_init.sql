@@ -1,16 +1,26 @@
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
-  email TEXT,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
   nickname TEXT,
   avatar_url TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
 
+CREATE TABLE sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  expires_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 CREATE TABLE cats (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   name TEXT NOT NULL,
+  slug TEXT NOT NULL,
   avatar_key TEXT,
   description TEXT,
   created_at INTEGER NOT NULL,
@@ -29,7 +39,7 @@ CREATE TABLE pose_categories (
 CREATE TABLE stickers (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
-  cat_id TEXT,
+  cat_id TEXT NOT NULL,
   category_id TEXT,
   title TEXT,
   original_key TEXT,
@@ -42,8 +52,7 @@ CREATE TABLE stickers (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (cat_id) REFERENCES cats(id),
-  FOREIGN KEY (category_id) REFERENCES pose_categories(id)
+  FOREIGN KEY (cat_id) REFERENCES cats(id)
 );
 
 CREATE TABLE processing_jobs (
@@ -63,4 +72,7 @@ CREATE TABLE processing_jobs (
 );
 
 CREATE INDEX idx_stickers_user ON stickers(user_id, created_at DESC);
+CREATE INDEX idx_stickers_cat ON stickers(cat_id);
+CREATE INDEX idx_sessions_user ON sessions(user_id);
+CREATE INDEX idx_cats_user ON cats(user_id, slug);
 CREATE INDEX idx_jobs_sticker ON processing_jobs(sticker_id);

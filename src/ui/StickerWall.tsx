@@ -2,24 +2,35 @@ import { useEffect, useMemo, useState } from "react";
 import type { Sticker } from "../types";
 import { PawPrint } from "./PawPrint";
 
-const SLOTS = [
-  { x: 4, y: 4, r: -8, w: 40 },
-  { x: 38, y: 0, r: 14, w: 34, deco: "zzz" as const },
-  { x: 62, y: 10, r: -6, w: 36, deco: "spark" as const },
-  { x: 2, y: 38, r: 10, w: 38, deco: "heart" as const },
-  { x: 36, y: 36, r: -5, w: 36 },
-  { x: 66, y: 42, r: 12, w: 32 },
-  { x: 0, y: 68, r: -7, w: 38 },
-  { x: 34, y: 70, r: 6, w: 40 },
-  { x: 66, y: 66, r: -11, w: 34, deco: "spark" as const },
-];
-
 const PAWS = [
   { x: 46, y: 22, r: 20, s: 22 },
   { x: 18, y: 58, r: -30, s: 18 },
   { x: 72, y: 78, r: 40, s: 20 },
   { x: 8, y: 18, r: -10, s: 16 },
 ];
+
+function hash(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
+function scatter(id: string, i: number) {
+  const h = hash(id + String(i));
+  const col = i % 3;
+  const row = Math.floor(i / 3);
+  const jx = (h % 19) - 9;
+  const jy = ((h >> 6) % 17) - 8;
+  const rot = ((h % 31) - 15) * 1.2;
+  const w = 26 + ((h >> 11) % 16);
+  return {
+    left: Math.max(0, 3 + col * 31 + jx * 0.55),
+    top: Math.max(0, 2 + row * 24 + jy * 0.5),
+    rot,
+    w,
+    z: (h % 12) + (i % 3),
+  };
+}
 
 function useBlobUrl(blob: Blob) {
   const [url, setUrl] = useState<string>("");
@@ -45,25 +56,6 @@ export function StickerImg({
   return <img src={url} alt={alt} className={className} draggable={false} />;
 }
 
-function Deco({ kind }: { kind?: "zzz" | "spark" | "heart" }) {
-  if (kind === "zzz") {
-    return (
-      <span className="font-hand absolute -top-3 right-1 text-lg leading-none text-mint">
-        zzz
-      </span>
-    );
-  }
-  if (kind === "spark") {
-    return (
-      <span className="absolute -top-2 -right-1 text-honey-dark">✦</span>
-    );
-  }
-  if (kind === "heart") {
-    return <span className="absolute top-2 right-2 text-base text-[#E58AA0]">♡</span>;
-  }
-  return null;
-}
-
 export function StickerWall({
   stickers,
   onOpen,
@@ -71,9 +63,14 @@ export function StickerWall({
   stickers: Sticker[];
   onOpen: (id: string) => void;
 }) {
-  const shown = useMemo(() => stickers.slice(0, 9), [stickers]);
+  const layout = useMemo(
+    () => stickers.map((s, i) => ({ s, ...scatter(s.id, i) })),
+    [stickers],
+  );
+  const rows = Math.max(1, Math.ceil(stickers.length / 3));
+  const minH = Math.max(280, rows * 168 + 48);
 
-  if (shown.length === 0) {
+  if (stickers.length === 0) {
     return (
       <div className="relative mx-2 h-full min-h-[280px]">
         {PAWS.map((p, i) => (
@@ -87,14 +84,14 @@ export function StickerWall({
         <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
           <PawPrint size={40} className="mb-3 text-honey/80" />
           <p className="font-display text-lg font-semibold text-ink">还没有贴纸</p>
-          <p className="mt-1 text-sm text-muted">拍一只猫咪，收成第一张姿势吧</p>
+          <p className="mt-1 text-sm text-muted">拍一点或十一，收成第一张吧</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative mx-1 min-h-[420px]">
+    <div className="relative mx-1 overflow-hidden" style={{ minHeight: minH }}>
       {PAWS.map((p, i) => (
         <PawPrint
           key={i}
@@ -103,30 +100,23 @@ export function StickerWall({
           style={{ left: `${p.x}%`, top: `${p.y}%`, transform: `rotate(${p.r}deg)` }}
         />
       ))}
-      {shown.map((sticker, i) => {
-        const slot = SLOTS[i] ?? SLOTS[i % SLOTS.length];
-        return (
-          <button
-            key={sticker.id}
-            type="button"
-            onClick={() => onOpen(sticker.id)}
-            className="absolute origin-center"
-            style={{
-              left: `${slot.x}%`,
-              top: `${slot.y}%`,
-              width: `${slot.w}%`,
-              transform: `rotate(${slot.r}deg)`,
-            }}
-          >
-            <Deco kind={"deco" in slot ? slot.deco : undefined} />
-            <StickerImg
-              blob={sticker.sticker}
-              alt={sticker.title}
-              className="w-full select-none object-contain"
-            />
-          </button>
-        );
-      })}
+      {layout.map(({ s, left, top, rot, w, z }) => (
+        <button
+          key={s.id}
+          type="button"
+          onClick={() => onOpen(s.id)}
+          className="absolute origin-center"
+          style={{
+            left: `${left}%`,
+            top: `${top}%`,
+            width: `${w}%`,
+            transform: `rotate(${rot}deg)`,
+            zIndex: z,
+          }}
+        >
+          <StickerImg blob={s.sticker} alt={s.title} className="w-full select-none object-contain" />
+        </button>
+      ))}
     </div>
   );
 }
@@ -139,19 +129,17 @@ export function StickerGrid({
   onOpen: (id: string) => void;
 }) {
   if (stickers.length === 0) {
-    return (
-      <p className="px-2 py-16 text-center text-sm text-muted">这个分类还是空的</p>
-    );
+    return <p className="py-16 text-center text-sm text-muted">这只猫咪还没有贴纸</p>;
   }
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-3 gap-2">
       {stickers.map((s, i) => (
         <button
           key={s.id}
           type="button"
           onClick={() => onOpen(s.id)}
-          className="aspect-square rounded-2xl bg-white/60 p-1"
-          style={{ transform: `rotate(${[-4, 3, -2, 5, -3, 2][i % 6]}deg)` }}
+          className="aspect-square p-0.5"
+          style={{ transform: `rotate(${[-7, 5, -3, 8, -5, 4][i % 6]}deg)` }}
         >
           <StickerImg blob={s.sticker} alt={s.title} className="h-full w-full object-contain" />
         </button>

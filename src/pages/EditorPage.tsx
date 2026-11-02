@@ -1,7 +1,7 @@
 import { Check, ChevronLeft, Scissors } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CATEGORIES } from "../types";
+import { CATS } from "../types";
 import { patchDraft, processDraft, saveDraft, useApp } from "../lib/state";
 import { Screen } from "../ui/AppShell";
 import { StickerImg } from "../ui/StickerWall";
@@ -23,7 +23,7 @@ export function EditorPage() {
 
   return (
     <Screen className="flex flex-col bg-cream">
-      <header className="flex items-center justify-between px-4 pt-[max(14px,env(safe-area-inset-top))]">
+      <header className="flex items-center justify-between px-5 pt-[max(14px,env(safe-area-inset-top))]">
         <button
           type="button"
           onClick={() => navigate("/")}
@@ -56,7 +56,13 @@ export function EditorPage() {
                 <div className="mb-4 size-12 animate-bounce rounded-full bg-honey" />
                 <p className="font-display text-lg font-semibold text-ink">正在变成贴纸</p>
                 <p className="mt-2 text-sm text-muted">{draft.progress || "请稍等…"}</p>
-                <p className="mt-1 text-xs text-muted">第一次会下载模型，可能要一会儿</p>
+                <div className="mt-4 h-1.5 w-44 overflow-hidden rounded-full bg-white/80">
+                  <div
+                    className="h-full rounded-full bg-honey transition-[width] duration-150"
+                    style={{ width: `${Math.round((draft.progressRatio || 0) * 100)}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs text-muted">第一次会下载模型，可能要一会儿</p>
               </>
             )}
           </div>
@@ -70,26 +76,26 @@ export function EditorPage() {
       </div>
 
       <div className="px-5 pt-4">
-        <input
-          value={draft.title}
-          onChange={(e) => patchDraft({ title: e.target.value })}
-          placeholder="给这张贴纸起个名"
-          className="w-full rounded-2xl bg-white px-4 py-3 text-sm text-ink outline-none"
-        />
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {CATEGORIES.map((c) => (
+        <div className="flex gap-2">
+          {CATS.map((c) => (
             <button
-              key={c.id}
+              key={c.slug}
               type="button"
-              onClick={() => patchDraft({ categoryId: c.id })}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${
-                draft.categoryId === c.id ? "bg-honey text-ink" : "bg-white text-muted"
+              onClick={() => patchDraft({ catId: c.slug })}
+              className={`flex-1 rounded-full py-2 text-sm font-bold ${
+                draft.catId === c.slug ? "bg-honey text-ink" : "bg-white text-muted"
               }`}
             >
               {c.name}
             </button>
           ))}
         </div>
+        <input
+          value={draft.title}
+          onChange={(e) => patchDraft({ title: e.target.value })}
+          placeholder="备注，可不填"
+          className="mt-3 w-full rounded-2xl bg-white px-4 py-3 text-sm text-ink outline-none"
+        />
       </div>
 
       <div className="mt-3 mb-[max(16px,env(safe-area-inset-bottom))] flex gap-3 px-5">

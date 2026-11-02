@@ -1,7 +1,7 @@
 import { ChevronLeft, Download, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { CATEGORIES } from "../types";
+import { CATS, catName } from "../types";
 import { removeSticker, updateSticker, useApp } from "../lib/state";
 import { Screen } from "../ui/AppShell";
 import { StickerImg } from "../ui/StickerWall";
@@ -30,14 +30,14 @@ export function StickerDetailPage() {
     const url = URL.createObjectURL(current.sticker);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${current.title || "catpose"}.png`;
+    a.download = `${current.title || catName(current.catId)}.png`;
     a.click();
     URL.revokeObjectURL(url);
   }
 
   return (
     <Screen className="flex flex-col">
-      <header className="flex items-center px-4 pt-[max(14px,env(safe-area-inset-top))]">
+      <header className="flex items-center px-5 pt-[max(14px,env(safe-area-inset-top))]">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -46,7 +46,7 @@ export function StickerDetailPage() {
         >
           <ChevronLeft className="size-7" />
         </button>
-        <h1 className="flex-1 font-display text-lg font-semibold">贴纸</h1>
+        <h1 className="flex-1 font-display text-lg font-semibold">{catName(sticker.catId)}</h1>
       </header>
 
       <div className="mx-6 mt-2 flex flex-1 items-center justify-center rounded-[28px] checker p-6">
@@ -54,26 +54,27 @@ export function StickerDetailPage() {
       </div>
 
       <div className="px-5 pt-4 pb-[max(20px,env(safe-area-inset-bottom))]">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onBlur={() => void updateSticker(sticker.id, { title: title.trim() || "猫咪姿势" })}
-          className="w-full rounded-2xl bg-white px-4 py-3 text-sm outline-none"
-        />
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {CATEGORIES.map((c) => (
+        <div className="flex gap-2">
+          {CATS.map((c) => (
             <button
-              key={c.id}
+              key={c.slug}
               type="button"
-              onClick={() => void updateSticker(sticker.id, { categoryId: c.id })}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${
-                sticker.categoryId === c.id ? "bg-honey text-ink" : "bg-white text-muted"
+              onClick={() => void updateSticker(sticker.id, { catId: c.slug })}
+              className={`flex-1 rounded-full py-2 text-sm font-bold ${
+                sticker.catId === c.slug ? "bg-honey text-ink" : "bg-white text-muted"
               }`}
             >
               {c.name}
             </button>
           ))}
         </div>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onBlur={() => void updateSticker(sticker.id, { title: title.trim() })}
+          placeholder="备注，可不填"
+          className="mt-3 w-full rounded-2xl bg-white px-4 py-3 text-sm outline-none"
+        />
         <div className="mt-4 flex gap-3">
           <button
             type="button"

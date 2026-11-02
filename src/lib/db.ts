@@ -1,5 +1,9 @@
 import type { Profile, Sticker } from "../types";
 
+function asSticker(row: Sticker): Sticker {
+  return { ...row, catId: row.catId === "shiyi" ? "shiyi" : "yidian" };
+}
+
 const DB_NAME = "catpose";
 const DB_VERSION = 1;
 
@@ -31,7 +35,7 @@ export async function listStickers(): Promise<Sticker[]> {
   const db = await openDb();
   const rows = await req(db.transaction("stickers").objectStore("stickers").getAll());
   db.close();
-  return (rows as Sticker[]).sort((a, b) => b.createdAt - a.createdAt);
+  return (rows as Sticker[]).map(asSticker).sort((a, b) => b.createdAt - a.createdAt);
 }
 
 export async function getSticker(id: string): Promise<Sticker | undefined> {

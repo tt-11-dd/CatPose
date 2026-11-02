@@ -6,6 +6,7 @@ import { CapturePage } from "./pages/CapturePage";
 import { CollectionPage } from "./pages/CollectionPage";
 import { EditorPage } from "./pages/EditorPage";
 import { HomePage } from "./pages/HomePage";
+import { AuthPage } from "./pages/AuthPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { StickerDetailPage } from "./pages/StickerDetailPage";
 import { AppShell } from "./ui/AppShell";
@@ -27,6 +28,7 @@ export function App() {
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
+        <Route path="/login" element={<AuthPage />} />
         <Route path="/capture" element={<CapturePage />} />
         <Route path="/editor" element={<EditorPage />} />
         <Route path="/sticker/:id" element={<StickerDetailPage />} />

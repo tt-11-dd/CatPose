@@ -14,7 +14,7 @@ export function AppShell() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <Outlet />
       </div>
-      <nav className="shrink-0 px-4 pt-1 pb-[max(12px,env(safe-area-inset-bottom))]">
+      <nav className="shrink-0 px-5 pt-1 pb-[max(12px,env(safe-area-inset-bottom))]">
         <div className="flex items-center justify-around rounded-[28px] bg-white px-2 py-2.5 shadow-[0_10px_30px_rgba(80,50,20,0.12)]">
           {items.map((item) => (
             <NavLink
