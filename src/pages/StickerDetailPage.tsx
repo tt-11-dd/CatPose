@@ -1,4 +1,4 @@
-import { ChevronLeft, Download, Trash2 } from "lucide-react";
+import { ChevronLeft, Download, Loader2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CATS, catName } from "../types";
@@ -12,6 +12,7 @@ export function StickerDetailPage() {
   const navigate = useNavigate();
   const sticker = stickers.find((s) => s.id === id);
   const [title, setTitle] = useState(sticker?.title ?? "");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     setTitle(sticker?.title ?? "");
@@ -86,14 +87,18 @@ export function StickerDetailPage() {
           </button>
           <button
             type="button"
+            disabled={deleting}
             onClick={() => {
-              if (!confirm("删除这张贴纸？")) return;
-              void removeSticker(sticker.id).then(() => navigate("/", { replace: true }));
+              if (deleting || !confirm("删除这张贴纸？")) return;
+              setDeleting(true);
+              void removeSticker(sticker.id)
+                .then(() => navigate("/", { replace: true }))
+                .finally(() => setDeleting(false));
             }}
-            className="flex flex-1 items-center justify-center gap-2 rounded-[22px] bg-white py-3.5 text-sm font-bold text-[#c45c5c]"
+            className="flex flex-1 items-center justify-center gap-2 rounded-[22px] bg-white py-3.5 text-sm font-bold text-[#c45c5c] disabled:opacity-50"
           >
-            <Trash2 className="size-4" />
-            删除
+            {deleting ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+            {deleting ? "删除中…" : "删除"}
           </button>
         </div>
       </div>

@@ -186,54 +186,69 @@ export async function processDraft(): Promise<void> {
   }
 }
 
+let savingDraft = false;
+
 export async function saveDraft(): Promise<string | null> {
   const draft = snap.draft;
-  if (!draft?.cutout || !draft.sticker) return null;
-  const bmp = await createImageBitmap(draft.sticker);
-  const catId = draft.catId;
-  const title = draft.title.trim() || `${catId === "shiyi" ? "十一" : "一点"}的贴纸`;
-  let id = uid("sticker");
-  if (snap.user) {
-    const uploaded = await api.uploadSticker({
-      catSlug: catId,
+  if (savingDraft || !draft?.cutout || !draft.sticker) return null;
+  savingDraft = true;
+  try {
+    const bmp = await createImageBitmap(draft.sticker);
+    const catId = draft.catId;
+    const title = draft.title.trim() || `${catId === "shiyi" ? "十一" : "一点"}的贴纸`;
+    let id = uid("sticker");
+    if (snap.user) {
+      const uploaded = await api.uploadSticker({
+        catSlug: catId,
+        title,
+        width: bmp.width,
+        height: bmp.height,
+        original: draft.original,
+        cutout: draft.cutout,
+        sticker: draft.sticker,
+      });
+      id = uploaded.id;
+    }
+    const sticker: Sticker = {
+      id,
       title,
+      catId,
       width: bmp.width,
       height: bmp.height,
+      status: "completed",
       original: draft.original,
       cutout: draft.cutout,
       sticker: draft.sticker,
-    });
-    id = uploaded.id;
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    bmp.close();
+    if (!snap.user) await db.putSticker(sticker);
+    snap = {
+      ...snap,
+      stickers: [sticker, ...snap.stickers],
+      draft: null,
+    };
+    emit();
+    return sticker.id;
+  } finally {
+    savingDraft = false;
   }
-  const sticker: Sticker = {
-    id,
-    title,
-    catId,
-    width: bmp.width,
-    height: bmp.height,
-    status: "completed",
-    original: draft.original,
-    cutout: draft.cutout,
-    sticker: draft.sticker,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  };
-  bmp.close();
-  if (!snap.user) await db.putSticker(sticker);
-  snap = {
-    ...snap,
-    stickers: [sticker, ...snap.stickers],
-    draft: null,
-  };
-  emit();
-  return sticker.id;
 }
 
+const removing = new Set<string>();
+
 export async function removeSticker(id: string): Promise<void> {
-  if (snap.user) await api.deleteSticker(id);
-  else await db.deleteSticker(id);
-  snap = { ...snap, stickers: snap.stickers.filter((s) => s.id !== id) };
-  emit();
+  if (removing.has(id)) return;
+  removing.add(id);
+  try {
+    if (snap.user) await api.deleteSticker(id);
+    else await db.deleteSticker(id);
+    snap = { ...snap, stickers: snap.stickers.filter((s) => s.id !== id) };
+    emit();
+  } finally {
+    removing.delete(id);
+  }
 }
 
 export async function updateSticker(

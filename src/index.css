@@ -70,6 +70,29 @@ input {
     -9px 0;
 }
 
+@keyframes sticker-drop {
+  from {
+    transform: translateY(-72vh) rotate(var(--sticker-rot, 0deg));
+    opacity: 0.35;
+  }
+  72% {
+    transform: translateY(10px) rotate(var(--sticker-rot, 0deg));
+    opacity: 1;
+  }
+  86% {
+    transform: translateY(-4px) rotate(var(--sticker-rot, 0deg));
+  }
+  to {
+    transform: translateY(0) rotate(var(--sticker-rot, 0deg));
+    opacity: 1;
+  }
+}
+
+.sticker-drop {
+  --sticker-rot: 0deg;
+  animation: sticker-drop 0.78s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;

@@ -1,5 +1,5 @@
-import { Check, ChevronLeft, Scissors } from "lucide-react";
-import { useEffect } from "react";
+import { Check, ChevronLeft, Loader2, Scissors } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CATS } from "../types";
 import { patchDraft, processDraft, saveDraft, useApp } from "../lib/state";
@@ -9,6 +9,7 @@ import { StickerImg } from "../ui/StickerWall";
 export function EditorPage() {
   const { draft } = useApp();
   const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!draft) navigate("/capture", { replace: true });
@@ -17,8 +18,14 @@ export function EditorPage() {
   if (!draft) return null;
 
   async function onSave() {
-    const id = await saveDraft();
-    if (id) navigate("/", { replace: true });
+    if (saving) return;
+    setSaving(true);
+    try {
+      const id = await saveDraft();
+      if (id) navigate("/", { replace: true });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -102,8 +109,8 @@ export function EditorPage() {
         <button
           type="button"
           onClick={() => void processDraft()}
-          disabled={draft.status === "processing"}
-          className="flex flex-1 items-center justify-center gap-2 rounded-[22px] bg-white py-3.5 text-sm font-bold text-ink shadow-sm"
+          disabled={saving || draft.status === "processing"}
+          className="flex flex-1 items-center justify-center gap-2 rounded-[22px] bg-white py-3.5 text-sm font-bold text-ink shadow-sm disabled:opacity-50"
         >
           <Scissors className="size-5 text-muted" />
           重新抠图
@@ -111,11 +118,11 @@ export function EditorPage() {
         <button
           type="button"
           onClick={() => void onSave()}
-          disabled={!draft.sticker}
+          disabled={saving || !draft.sticker}
           className="flex flex-1 items-center justify-center gap-2 rounded-[22px] bg-honey py-3.5 text-sm font-bold text-ink shadow-sm disabled:opacity-50"
         >
-          <Check className="size-5" />
-          保存贴纸
+          {saving ? <Loader2 className="size-5 animate-spin" /> : <Check className="size-5" />}
+          {saving ? "保存中…" : "保存贴纸"}
         </button>
       </div>
     </Screen>
