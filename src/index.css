@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fredoka", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-rounded, system-ui, sans-serif;
+  --font-hand: "Caveat", "Segoe Script", cursive;
+  --color-cream: #fbf6ee;
+  --color-banner: #f8e4a6;
+  --color-honey: #f0c44d;
+  --color-honey-dark: #e8a317;
+  --color-ink: #3f2c1c;
+  --color-muted: #b59a7a;
+  --color-paw: #eadcc8;
+  --color-mint: #7dcea0;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: #efe4d4;
+}
+
+body {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.phone-shell {
+  min-height: 100svh;
+  height: 100svh;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--color-cream);
+  position: relative;
+  overflow: clip;
+}
+
+@media (min-width: 480px) {
+  html,
+  body,
+  #root {
+    background: #e8d7c0;
+  }
+  .phone-shell {
+    min-height: 100svh;
+    box-shadow: 0 20px 60px rgba(80, 50, 20, 0.18);
+  }
+}
+
+.checker {
+  background-color: #f7f1e6;
+  background-image:
+    linear-gradient(45deg, #efe6d6 25%, transparent 25%),
+    linear-gradient(-45deg, #efe6d6 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #efe6d6 75%),
+    linear-gradient(-45deg, transparent 75%, #efe6d6 75%);
+  background-size: 18px 18px;
+  background-position:
+    0 0,
+    0 9px,
+    9px -9px,
+    -9px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
